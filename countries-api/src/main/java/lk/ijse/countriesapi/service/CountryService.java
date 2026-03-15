@@ -27,7 +27,10 @@ public class CountryService {
         }
 
         List<Country> countries = webClient.get()
-                .uri("/all")
+                .uri(uriBuilder -> uriBuilder
+                        .path("/all")
+                        .queryParam("fields", "name,capital,region,population,flags")
+                        .build())
                 .retrieve()
                 .bodyToFlux(Country.class)
                 .collectList()
@@ -61,12 +64,17 @@ public class CountryService {
     @Scheduled(fixedRate = 600000) // 10 minutes in milliseconds
     public void refreshCache() {
         System.out.println("Refreshing countries cache...");
+
         this.cachedCountries = webClient.get()
-                .uri("/all")
+                .uri(uriBuilder -> uriBuilder
+                        .path("/all")
+                        .queryParam("fields", "name,capital,region,population,flags")
+                        .build())
                 .retrieve()
                 .bodyToFlux(Country.class)
                 .collectList()
                 .block();
+
         System.out.println("Cache refreshed with " +
                 (cachedCountries != null ? cachedCountries.size() : 0) + " countries");
     }
